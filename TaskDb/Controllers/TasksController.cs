@@ -47,7 +47,8 @@ public class TasksController : ControllerBase {
             Description = dto.Description?.Trim() ?? string.Empty,
             Priority = dto.Priority,
             IsCompleted = false,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
+            DueDate = dto.DueDate
         };
 
         _db.Tasks.Add(task);
@@ -67,6 +68,7 @@ public class TasksController : ControllerBase {
         task.Description = dto.Description?.Trim() ?? string.Empty;
         task.IsCompleted = dto.IsCompleted;
         task.Priority = dto.Priority;
+        task.DueDate = dto.DueDate;
         await _db.SaveChangesAsync();
         return Ok(task);
     }
@@ -136,7 +138,7 @@ public class TasksController : ControllerBase {
             CreatedLastWeek = recentCount
         });
     }
-    
+
 
     [HttpGet("paged")]
     public async Task<ActionResult> GetPaged(
@@ -152,8 +154,7 @@ public class TasksController : ControllerBase {
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
-        return Ok(new
-        {
+        return Ok(new {
             Page = page,
             PageSize = pageSize,
             TotalCount = totalCount,
@@ -162,5 +163,18 @@ public class TasksController : ControllerBase {
             HasNext = page < totalPages,
             Items = tasks
         });
+    }
+    
+
+    [HttpGet("overdue")]
+    public async Task<ActionResult<IEnumerable<TaskItem>>> GetOverdue() {
+        var now = DateTime.UtcNow;
+        var overdue = await _db.Tasks
+            .Where(t => t.DueDate != null
+                && t.DueDate < now
+                && !t.IsCompleted)
+            .OrderBy(t => t.DueDate)
+            .ToListAsync();
+        return Ok(overdue);
     }
 }
