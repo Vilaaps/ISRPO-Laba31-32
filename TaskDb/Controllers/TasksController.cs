@@ -143,7 +143,8 @@ public class TasksController : ControllerBase {
     [HttpGet("paged")]
     public async Task<ActionResult> GetPaged(
         [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 5) {
+        [FromQuery] int pageSize = 5)
+    {
         if (page < 1) page = 1;
         if (pageSize < 1) pageSize = 5;
         if (pageSize > 50) pageSize = 50;
@@ -154,7 +155,8 @@ public class TasksController : ControllerBase {
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
-        return Ok(new {
+        return Ok(new
+        {
             Page = page,
             PageSize = pageSize,
             TotalCount = totalCount,
